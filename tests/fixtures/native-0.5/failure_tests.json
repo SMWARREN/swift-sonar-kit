@@ -1,0 +1,55 @@
+{
+  "devices": [
+    {
+      "deviceId": "00000000-0000-0000-0000-000000000001",
+      "deviceName": "Sanitized Mac",
+      "platform": "macOS",
+      "osVersion": "26.6.2",
+      "architecture": "arm64",
+      "modelName": "Mac"
+    }
+  ],
+  "testPlanConfigurations": [
+    {
+      "configurationId": "1",
+      "configurationName": "Sanitized Scheme Action"
+    }
+  ],
+  "testNodes": [
+    {
+      "name": "SanitizedPlan",
+      "nodeType": "Test Plan",
+      "result": "Failed",
+      "children": [
+        {
+          "name": "SanitizedTests.xctest",
+          "nodeType": "Unit test bundle",
+          "result": "Failed",
+          "children": [
+            {
+              "name": "SanitizedTests",
+              "nodeType": "Test Suite",
+              "result": "Failed",
+              "children": [
+                {
+                  "name": "testSimpleOne()",
+                  "nodeIdentifier": "SanitizedTests/testSimpleOne()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/App/SanitizedTests/SanitizedTests/testSimpleOne()",
+                  "nodeType": "Test Case",
+                  "result": "Passed"
+                },
+                {
+                  "name": "testSimpleTwo()",
+                  "nodeIdentifier": "SanitizedTests/testSimpleTwo()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/App/SanitizedTests/SanitizedTests/testSimpleTwo()",
+                  "nodeType": "Test Case",
+                  "result": "Failed"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

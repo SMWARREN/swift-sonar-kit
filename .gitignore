@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+.coverage*
+htmlcov/
+.swift-sonar/
+.scannerwork/
+.env
+.env.*
+*.token
+.DS_Store

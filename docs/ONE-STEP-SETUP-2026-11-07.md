@@ -1,0 +1,48 @@
+# One-step dependency setup acceptance, November 7, 2026
+
+## Scope and execution limits
+
+The operator requested automatic setup from `./scan PROJECT`, and reserved the next actual scan for their own terminal. This acceptance exercised **dependency setup only**. No project tests, SwiftLint analysis/corrections, native app builds, Sonar analysis/submission, Docker commands, or server provisioning were run for this change. Version/import probes are not analysis.
+
+The normal full workflow now enters the same private setup context before preparation and tests. Its existing test/artifact/source freshness, lint, diagnostic continuation, and publication gates remain intact. That integration is covered by mocked regression tests, not a new full consumer scan.
+
+## Observed receipts
+
+Host: macOS arm64. Checks completed on November 7, 2026, approximately 13:54–14:00 UTC.
+
+| Check | Observed result |
+| --- | --- |
+| Portable suite after final code cleanup | 393 tests, 390 passed, 3 explicitly skipped real/external-fixture checks |
+| Python code checks | Ruff 0.14.3 passed over changed implementation/tests |
+| Launcher | `sh -n scan` passed, six synthetic launcher tests passed |
+| Private runtime, cold | System Python 3.9 invoked standalone bootstrap. Verified uv 0.13.7 archive, installed managed CPython 3.12.16 under the private runtime cache |
+| Private runtime, repeat | Returned exactly the same managed interpreter path without another download |
+| Analyzer tools, cold | With host analyzer directories removed from PATH, actual `./scan PROJECT --setup-only --json` downloaded and verified SwiftLint 0.65.1 and SonarScanner 8.3.1.16491. Both receipts reported `bootstrapped` |
+| Analyzer tools, repeat | Both reported `cached`; setup-only exited 0 |
+| Real fallback entry point | With only system directories on PATH and no PYTHON override, `./scan PROJECT --setup-only --json` selected private managed Python and completed successfully |
+| Python coverage, cold | In an isolated scratch project with spaces in its path, created `.swift-sonar/python`, installed coverage 7.17.2, and verified exact import version and `sys.prefix` |
+| Managed environment restoration | Original PATH and PYTHON restored after context exit |
+| Existing consumer evidence | Scan-result, workflow/project summaries, test receipt, plan, lint reports and configuration hashes stayed unchanged. Prior history entries and existing build evidence metadata stayed unchanged during the two tool setup runs |
+| Setup result | Separate `.swift-sonar/setup-result.json`, exit 0, stage `dependency-setup`, publication false. JSON stdout matched saved JSON |
+| Independent review | Separate workers reviewed root workflow/launcher changes and the frozen tool-bootstrap implementation. Concrete review issues were fixed before acceptance |
+
+Setup-only creates cache/environment/lock files and its own result file. It is not a no-write operation. `--plan-only` remains non-writing and never bootstraps/downloads a runtime. Failure-preservation and unsafe-output-path tests cover setup-only errors without overwriting previous scan summaries.
+
+## Download pins exercised on arm64
+
+| Artifact | SHA256 |
+| --- | --- |
+| SwiftLint 0.65.1 portable ZIP | `c1e429b0599cf1b516f369a2d9ec04eaf0e436f3c12b637df8851fa52ff694d0` |
+| SonarScanner 8.3.1.16491 macOS aarch64 ZIP | `feea9890c330c6ceb32333cb22629bec2241607cdf1cd1129208bb5ecd77f5da` |
+| uv 0.13.7 aarch64 macOS archive | `81b811b57e4624df7ed3aac148e0359100d9962f3d9dce00aec533dc2e086731` |
+
+Native download pins are frozen from official release artifacts. Coverage uses its pinned package version and the explicit HTTPS PyPI index in an isolated project virtualenv. Managed CPython is installed through the pinned uv runtime manager. Unknown native-tool pins fail rather than silently replace reviewed versions.
+
+## Boundaries and remaining gaps
+
+- Real setup acceptance was on macOS arm64 only. macOS x86_64 pins and selection have synthetic coverage, not an Intel-host acceptance receipt.
+- The next actual consumer scan remains intentionally unrun. Setup success does not establish test success, coverage freshness, server health or a passing quality gate.
+- Git, the project's Swift/Xcode toolchain, required simulator runtimes, licence approval and a running Docker daemon for automatic local-server use remain system prerequisites. No sudo, global package installation, Homebrew install, shell-profile modification or automatic Xcode/Docker installation occurs.
+- Arbitrary project-specific dependencies are not inferred. Supported declared dependencies and the existing reviewed recipe determine setup.
+- Local cache ownership/path checks, archive validation, isolated child environments and bounded operations reduce specific risks. These tests and reviews are not a complete security certification or an adversarial attestation.
+- Earlier real-server receipts remain separate in `PATH-ONLY-ACCEPTANCE-2026-11-07.md`; none were regenerated by this setup-only acceptance.

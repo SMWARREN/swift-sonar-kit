@@ -1,0 +1,31 @@
+{
+  "result": "Passed",
+  "totalTestCount": 3,
+  "passedTests": 3,
+  "failedTests": 0,
+  "skippedTests": 0,
+  "expectedFailures": 0,
+  "testFailures": [],
+  "startTime": 1794044578.0,
+  "finishTime": 1794044602.0,
+  "devicesAndConfigurations": [
+    {
+      "device": {
+        "deviceId": "00000000-0000-0000-0000-000000000001",
+        "deviceName": "Sanitized Mac",
+        "platform": "macOS",
+        "osVersion": "26.6.2",
+        "architecture": "arm64",
+        "modelName": "Mac"
+      },
+      "testPlanConfiguration": {
+        "configurationId": "1",
+        "configurationName": "Sanitized Scheme Action"
+      },
+      "passedTests": 4,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "expectedFailures": 0
+    }
+  ]
+}

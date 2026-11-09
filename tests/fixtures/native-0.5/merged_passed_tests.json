@@ -1,0 +1,186 @@
+{
+  "devices": [
+    {
+      "deviceId": "00000000-0000-0000-0000-000000000001",
+      "deviceName": "Sanitized Mac",
+      "platform": "macOS",
+      "osVersion": "26.6.2",
+      "architecture": "arm64",
+      "modelName": "Mac"
+    },
+    {
+      "deviceId": "00000000-0000-0000-0000-000000000002",
+      "deviceName": "iPhone Simulator",
+      "platform": "iOS Simulator",
+      "osVersion": "19.0",
+      "architecture": "arm64",
+      "modelName": "iPhone 16"
+    }
+  ],
+  "testPlanConfigurations": [
+    {
+      "configurationId": "1",
+      "configurationName": "Config 1"
+    }
+  ],
+  "testNodes": [
+    {
+      "name": "MergedPlan",
+      "nodeType": "Test Plan",
+      "result": "Passed",
+      "children": [
+        {
+          "name": "SanitizedTarget.xctest",
+          "nodeType": "Unit test bundle",
+          "result": "Passed",
+          "children": [
+            {
+              "name": "SanitizedSuite",
+              "nodeType": "Test Suite",
+              "result": "Passed",
+              "children": [
+                {
+                  "name": "testAlpha()",
+                  "nodeIdentifier": "SanitizedSuite/testAlpha()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/SanitizedTarget/SanitizedSuite/testAlpha()",
+                  "nodeType": "Test Case",
+                  "result": "Passed",
+                  "children": [
+                    {
+                      "name": "00000000-0000-0000-0000-000000000001",
+                      "nodeIdentifier": "00000000-0000-0000-0000-000000000001",
+                      "nodeType": "Device",
+                      "children": [
+                        {
+                          "name": "Config 1",
+                          "nodeIdentifier": "1",
+                          "nodeType": "Test Plan Configuration",
+                          "result": "Passed",
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "name": "00000000-0000-0000-0000-000000000002",
+                      "nodeIdentifier": "00000000-0000-0000-0000-000000000002",
+                      "nodeType": "Device",
+                      "children": [
+                        {
+                          "name": "Config 1",
+                          "nodeIdentifier": "1",
+                          "nodeType": "Test Plan Configuration",
+                          "result": "Passed",
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "testBeta()",
+                  "nodeIdentifier": "SanitizedSuite/testBeta()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/SanitizedTarget/SanitizedSuite/testBeta()",
+                  "nodeType": "Test Case",
+                  "result": "Passed",
+                  "children": [
+                    {
+                      "name": "00000000-0000-0000-0000-000000000001",
+                      "nodeIdentifier": "00000000-0000-0000-0000-000000000001",
+                      "nodeType": "Device",
+                      "children": [
+                        {
+                          "name": "Config 1",
+                          "nodeIdentifier": "1",
+                          "nodeType": "Test Plan Configuration",
+                          "result": "Passed",
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "name": "00000000-0000-0000-0000-000000000002",
+                      "nodeIdentifier": "00000000-0000-0000-0000-000000000002",
+                      "nodeType": "Device",
+                      "children": [
+                        {
+                          "name": "Config 1",
+                          "nodeIdentifier": "1",
+                          "nodeType": "Test Plan Configuration",
+                          "result": "Passed",
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "testGamma(x:)",
+                  "nodeIdentifier": "SanitizedSuite/testGamma(x:)",
+                  "nodeIdentifierURL": "test://com.apple.xcode/SanitizedTarget/SanitizedSuite/testGamma(x:)",
+                  "nodeType": "Test Case",
+                  "result": "Passed",
+                  "children": [
+                    {
+                      "name": "00000000-0000-0000-0000-000000000001",
+                      "nodeIdentifier": "00000000-0000-0000-0000-000000000001",
+                      "nodeType": "Device",
+                      "children": [
+                        {
+                          "name": "Config 1",
+                          "nodeIdentifier": "1",
+                          "nodeType": "Test Plan Configuration",
+                          "result": "Passed",
+                          "children": [
+                            {
+                              "name": "x1",
+                              "nodeType": "Arguments",
+                              "result": "Passed",
+                              "nodeIdentifierURL": "test://com.apple.xcode/SanitizedTarget/SanitizedSuite/testGamma(x:)?args=7831"
+                            },
+                            {
+                              "name": "x2",
+                              "nodeType": "Arguments",
+                              "result": "Passed",
+                              "nodeIdentifierURL": "test://com.apple.xcode/SanitizedTarget/SanitizedSuite/testGamma(x:)?args=7832"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "00000000-0000-0000-0000-000000000002",
+                      "nodeIdentifier": "00000000-0000-0000-0000-000000000002",
+                      "nodeType": "Device",
+                      "children": [
+                        {
+                          "name": "Config 1",
+                          "nodeIdentifier": "1",
+                          "nodeType": "Test Plan Configuration",
+                          "result": "Passed",
+                          "children": [
+                            {
+                              "name": "x1",
+                              "nodeType": "Arguments",
+                              "result": "Passed",
+                              "nodeIdentifierURL": "test://com.apple.xcode/SanitizedTarget/SanitizedSuite/testGamma(x:)?args=7831"
+                            },
+                            {
+                              "name": "x2",
+                              "nodeType": "Arguments",
+                              "result": "Passed",
+                              "nodeIdentifierURL": "test://com.apple.xcode/SanitizedTarget/SanitizedSuite/testGamma(x:)?args=7832"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

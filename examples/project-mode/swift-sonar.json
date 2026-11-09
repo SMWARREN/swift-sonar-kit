@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "properties": "sonar-project.properties",
+  "scannerProperties": {},
+  "test": {
+    "argv": ["python3", "Tools/run_tests.py"],
+    "artifacts": [
+      {"kind": "file", "path": "build/test-summary.txt"}
+    ]
+  },
+  "lint": {
+    "argv": ["swiftlint", "lint", "--quiet", "--strict", "--reporter", "json"],
+    "import": "native"
+  },
+  "tools": {
+    "swiftlint": "0.65.1",
+    "sonarScanner": "8.3.0",
+    "sonarApple": "0.5.1"
+  }
+}

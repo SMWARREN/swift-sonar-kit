@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "swift-sonar-kit"
+version = "0.5.0"
+description = "Reusable SwiftLint and Sonar source analysis with optional advanced project audits"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+authors = [{name = "Swift Sonar Kit contributors"}]
+dependencies = []
+
+[project.scripts]
+swift-sonar = "swift_sonar_kit.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
