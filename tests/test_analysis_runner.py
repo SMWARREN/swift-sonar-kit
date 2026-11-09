@@ -70,6 +70,21 @@ class AnalysisRunnerTests(unittest.TestCase):
         self.interactive_browser = False
         self.mutate_at = None
         self.addCleanup(patch.stopall)
+        # Model the required macOS utilities without touching host system files
+        # or executing any utility. The subprocess fence below remains active.
+        self.system_bin = base / "system-bin"
+        self.system_usr_bin = base / "system-usr-bin"
+        self.system_bin.mkdir()
+        self.system_usr_bin.mkdir()
+        self.utility_targets = {}
+        for name in ("sh", "dirname", "basename", "readlink", "uname", "sed", "grep", "security"):
+            parent = self.system_bin if name == "sh" else self.system_usr_bin
+            target = parent / name
+            target.write_text("#!/bin/sh\nexit 99\n")
+            target.chmod(0o700)
+            self.utility_targets[name] = target
+        self.system_path_requests = []
+        patch.object(analysis_runner, "Path", side_effect=self.scanner_path).start()
         patch.dict(os.environ, {"SONAR_TOKEN": "fixture-secret-token"}, clear=False).start()
         patch.object(subprocess, "run", side_effect=self.child).start()
         self.environment = patch.object(analysis_runner, "prepared_environment", side_effect=self.prepared).start()
@@ -82,6 +97,16 @@ class AnalysisRunnerTests(unittest.TestCase):
         patch("swift_sonar_kit.automatic.prepare", side_effect=AssertionError("test preparation forbidden")).start()
         patch("swift_sonar_kit.receipts.run_test", side_effect=AssertionError("tests forbidden")).start()
         patch("swift_sonar_kit.project_config.load_project", side_effect=AssertionError("test recipe forbidden")).start()
+
+    def scanner_path(self, *parts):
+        path = Path(*parts)
+        if path == Path("/bin"):
+            self.system_path_requests.append(str(path))
+            return self.system_bin
+        if path == Path("/usr/bin"):
+            self.system_path_requests.append(str(path))
+            return self.system_usr_bin
+        return path
 
     def write(self, name, text):
         p = self.root / name
@@ -120,9 +145,13 @@ class AnalysisRunnerTests(unittest.TestCase):
             self.assertTrue(shutil.which("sh", path=env["PATH"]))
             security = shutil.which("security", path=env["PATH"])
             self.assertIsNotNone(security, "Scanner SSL bootstrap requires macOS security on PATH")
-            self.assertEqual(Path(security).resolve(), Path("/usr/bin/security").resolve())
+            self.assertEqual(Path(security).resolve(), self.utility_targets["security"])
             self.assertEqual(set(p.name for p in Path(env["PATH"]).iterdir()),
                              {"sh", "dirname", "basename", "readlink", "uname", "sed", "grep", "security"})
+            self.assertEqual(self.system_path_requests, ["/bin"] + ["/usr/bin"] * 7)
+            self.system_path_requests.clear()
+            for name, target in self.utility_targets.items():
+                self.assertEqual((Path(env["PATH"]) / name).resolve(), target)
             self.assertNotIn("fixture-secret-token", " ".join(argv))
             props = parse_properties((self.root / ".swift-sonar/analysis-effective.properties").read_bytes())
             self.assertEqual(props["sonar.sources"], "Sources")
@@ -331,13 +360,28 @@ class AnalysisRunnerTests(unittest.TestCase):
     def test_missing_system_security_fails_clearly_without_reading_keychains(self):
         original_access = os.access
         def available(path, mode):
-            return False if Path(path) == Path("/usr/bin/security") else original_access(path, mode)
+            return False if Path(path) == self.utility_targets["security"] else original_access(path, mode)
         with patch.object(analysis_runner.os, "access", side_effect=available):
             with self.assertRaisesRegex(ValueError, "system utility is unavailable: security"):
                 with analysis_runner._scanner_path(self.root):
                     self.fail("Missing certificate utility must not be ignored")
         self.assertEqual(self.calls, [])
         self.assertEqual(list((self.root / ".swift-sonar").glob(".analysis-path-*")), [])
+
+    def test_every_missing_system_utility_fails_closed_and_cleans_path(self):
+        for name, target in self.utility_targets.items():
+            with self.subTest(utility=name):
+                contents = target.read_bytes()
+                target.unlink()
+                try:
+                    with self.assertRaisesRegex(ValueError, f"system utility is unavailable: {name}"):
+                        with analysis_runner._scanner_path(self.root):
+                            self.fail("Missing required utility must not be ignored")
+                finally:
+                    target.write_bytes(contents)
+                    target.chmod(0o700)
+                self.assertEqual(self.calls, [])
+                self.assertEqual(list((self.root / ".swift-sonar").glob(".analysis-path-*")), [])
 
     def test_scanner_full_build_version_accepts_configured_release_prefix(self):
         self.setup["tools"]["sonarScanner"]["version"] = "8.3.1.16491"

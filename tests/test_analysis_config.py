@@ -85,9 +85,11 @@ class AnalysisConfigTests(unittest.TestCase):
         write(self.root, "Sources/a.swift", "x\n")
         result = self.discover()
         self.assertEqual(result["tools"], DEFAULT_TOOLS)
-        for name in ("swiftlint", "sonarScanner"):
-            self.assertEqual(_resolve_tool_pin(name, result["tools"][name])["version"].split(".")[:3],
-                             result["tools"][name].split(".")[:3])
+        # Pin compatibility is for the supported target, not the test host.
+        with mock.patch("sys.platform", "darwin"):
+            for name in ("swiftlint", "sonarScanner"):
+                self.assertEqual(_resolve_tool_pin(name, result["tools"][name])["version"].split(".")[:3],
+                                 result["tools"][name].split(".")[:3])
 
     # ------------------------------------------------------------ recipes
 

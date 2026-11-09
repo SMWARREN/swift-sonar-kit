@@ -30,6 +30,11 @@ def _make_zip(entries: dict[str, bytes], *, external_attrs: dict[str, int] | Non
 
 class BootstrapTests(unittest.TestCase):
     def setUp(self):
+        # These tests use synthetic macOS archives, never native binaries.
+        # The explicit non-Darwin rejection test overrides this context.
+        platform = patch("sys.platform", "darwin")
+        platform.start()
+        self.addCleanup(platform.stop)
         self.temp = tempfile.TemporaryDirectory(prefix="swift-sonar-bootstrap-")
         self.addCleanup(self.temp.cleanup)
         self.root = (Path(self.temp.name) / "project").resolve()
