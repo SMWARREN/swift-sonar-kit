@@ -22,8 +22,12 @@ import zipfile
 # Pinned official release artifacts with verified checksums.
 # Unknown versions fail closed with an actionable error and are never silently upgraded.
 SWIFTLINT_0_65_1_SHA = "c1e429b0599cf1b516f369a2d9ec04eaf0e436f3c12b637df8851fa52ff694d0"
+SWIFTLINT_LINUX_X64_SHA = "caeed6f4a679c35539ffaf124f6c4ab4a8416917f7d8796279dc52b74026059d"
+SWIFTLINT_LINUX_ARM64_SHA = "9ffa52f478e6d8eb485d37d14715ffac90abc81c58f3370d598bf75be05605f8"
 SONAR_SCANNER_8_3_1_ARM64_SHA = "feea9890c330c6ceb32333cb22629bec2241607cdf1cd1129208bb5ecd77f5da"
 SONAR_SCANNER_8_3_1_X64_SHA = "25a5d51c89ad500c1a5d40e13763b2ef168b187f8a024a0590664f4a1897b55a"
+SONAR_SCANNER_LINUX_X64_SHA = "0f304e4c5982f0cfbd06762306d6e60e6ed9c8e3853629ae3b8ec2f4dc9bdc04"
+SONAR_SCANNER_LINUX_ARM64_SHA = "aca51f414a581b8f088207e089f281b1b2985fb202160e8ca2e135a305639d26"
 
 PINS = {
     "swiftlint": {
@@ -36,7 +40,25 @@ PINS = {
                 "version_args": ["version"],
                 "version_pattern": r"(?m)^([0-9]+\.[0-9]+\.[0-9]+)\s*$",
                 "version": "0.65.1",
-            }
+            },
+            "linux-x64": {
+                "url": "https://github.com/realm/SwiftLint/releases/download/0.65.1/swiftlint_linux_amd64.zip",
+                "sha256": SWIFTLINT_LINUX_X64_SHA,
+                "size": 67122320,
+                "binary": "swiftlint",
+                "version_args": ["version"],
+                "version_pattern": r"(?m)^([0-9]+\.[0-9]+\.[0-9]+)\s*$",
+                "version": "0.65.1",
+            },
+            "linux-arm64": {
+                "url": "https://github.com/realm/SwiftLint/releases/download/0.65.1/swiftlint_linux_arm64.zip",
+                "sha256": SWIFTLINT_LINUX_ARM64_SHA,
+                "size": 64444529,
+                "binary": "swiftlint",
+                "version_args": ["version"],
+                "version_pattern": r"(?m)^([0-9]+\.[0-9]+\.[0-9]+)\s*$",
+                "version": "0.65.1",
+            },
         }
     },
     "sonarScanner": {
@@ -57,6 +79,22 @@ PINS = {
                 "version_pattern": r"SonarScanner CLI ([0-9.]+)",
                 "version": "8.3.1.16491",
             },
+            "linux-x64": {
+                "url": "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-8.3.1.16491-linux-x64.zip",
+                "sha256": SONAR_SCANNER_LINUX_X64_SHA,
+                "binary": "sonar-scanner-8.3.1.16491-linux-x64/bin/sonar-scanner",
+                "version_args": ["--version"],
+                "version_pattern": r"SonarScanner CLI ([0-9.]+)",
+                "version": "8.3.1.16491",
+            },
+            "linux-arm64": {
+                "url": "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-8.3.1.16491-linux-aarch64.zip",
+                "sha256": SONAR_SCANNER_LINUX_ARM64_SHA,
+                "binary": "sonar-scanner-8.3.1.16491-linux-aarch64/bin/sonar-scanner",
+                "version_args": ["--version"],
+                "version_pattern": r"SonarScanner CLI ([0-9.]+)",
+                "version": "8.3.1.16491",
+            },
         },
         "8.3.1.16491": {
             "arm64": {
@@ -71,6 +109,22 @@ PINS = {
                 "url": "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-8.3.1.16491-macosx-x64.zip",
                 "sha256": SONAR_SCANNER_8_3_1_X64_SHA,
                 "binary": "sonar-scanner-8.3.1.16491-macosx-x64/bin/sonar-scanner",
+                "version_args": ["--version"],
+                "version_pattern": r"SonarScanner CLI ([0-9.]+)",
+                "version": "8.3.1.16491",
+            },
+            "linux-x64": {
+                "url": "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-8.3.1.16491-linux-x64.zip",
+                "sha256": SONAR_SCANNER_LINUX_X64_SHA,
+                "binary": "sonar-scanner-8.3.1.16491-linux-x64/bin/sonar-scanner",
+                "version_args": ["--version"],
+                "version_pattern": r"SonarScanner CLI ([0-9.]+)",
+                "version": "8.3.1.16491",
+            },
+            "linux-arm64": {
+                "url": "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-8.3.1.16491-linux-aarch64.zip",
+                "sha256": SONAR_SCANNER_LINUX_ARM64_SHA,
+                "binary": "sonar-scanner-8.3.1.16491-linux-aarch64/bin/sonar-scanner",
                 "version_args": ["--version"],
                 "version_pattern": r"SonarScanner CLI ([0-9.]+)",
                 "version": "8.3.1.16491",
@@ -342,8 +396,8 @@ def _validate_tool_binary(tool_install_dir: Path, binary_rel: str) -> Path | Non
 
 
 def _resolve_tool_pin(tool_name: str, requested_version: str) -> dict:
-    if sys.platform != "darwin":
-        raise ValueError(f"Automatic bootstrap of macOS binaries is only supported on Darwin/macOS, not '{sys.platform}'")
+    if sys.platform not in ("darwin", "linux"):
+        raise ValueError(f"Automatic bootstrap is only supported on Darwin/macOS and Linux, not '{sys.platform}'")
 
     tool_pins = PINS.get(tool_name)
     if not tool_pins:
@@ -357,11 +411,14 @@ def _resolve_tool_pin(tool_name: str, requested_version: str) -> dict:
             f"Only verified pinned versions ({', '.join(sorted(tool_pins.keys()))}) can be auto-bootstrapped."
         )
     arch = _current_arch()
-    if "all" in pin_entry:
+    platform_key = f"{sys.platform}-{arch}"
+    if platform_key in pin_entry:
+        return pin_entry[platform_key]
+    if "all" in pin_entry and sys.platform == "darwin":
         return pin_entry["all"]
-    if arch in pin_entry:
+    if arch in pin_entry and sys.platform == "darwin":
         return pin_entry[arch]
-    raise ValueError(f"No binary pin for {tool_name} {requested_version} on architecture '{arch}'")
+    raise ValueError(f"No binary pin for {tool_name} {requested_version} on {sys.platform} architecture '{arch}'")
 
 
 def _bootstrap_tool(tool_name: str, requested_version: str, cache_dir: Path, root: Path) -> tuple[Path, str, str]:

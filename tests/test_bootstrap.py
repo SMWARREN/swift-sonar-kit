@@ -30,11 +30,6 @@ def _make_zip(entries: dict[str, bytes], *, external_attrs: dict[str, int] | Non
 
 class BootstrapTests(unittest.TestCase):
     def setUp(self):
-        # These tests use synthetic macOS archives, never native binaries.
-        # The explicit non-Darwin rejection test overrides this context.
-        platform = patch("sys.platform", "darwin")
-        platform.start()
-        self.addCleanup(platform.stop)
         self.temp = tempfile.TemporaryDirectory(prefix="swift-sonar-bootstrap-")
         self.addCleanup(self.temp.cleanup)
         self.root = (Path(self.temp.name) / "project").resolve()
@@ -295,10 +290,17 @@ class BootstrapTests(unittest.TestCase):
             self.assertNotIn("SECRET_PII_OR_INTERNAL_TRACEBACK", str(ctx.exception))
             self.assertIn("Failed to install coverage==7.17.2", str(ctx.exception))
 
-    def test_rejects_non_darwin_platform_before_download(self):
-        with patch("sys.platform", "linux"):
-            with self.assertRaisesRegex(ValueError, "only supported on Darwin/macOS"):
+    def test_rejects_unsupported_platform_before_download(self):
+        with patch("sys.platform", "win32"):
+            with self.assertRaisesRegex(ValueError, "only supported on Darwin/macOS and Linux"):
                 bootstrap._resolve_tool_pin("swiftlint", "0.65.1")
+
+    def test_resolves_linux_pins(self):
+        with patch("sys.platform", "linux"), patch("platform.machine", return_value="x86_64"):
+            pin = bootstrap._resolve_tool_pin("swiftlint", "0.65.1")
+            self.assertIn("linux", pin["url"])
+            scanner_pin = bootstrap._resolve_tool_pin("sonarScanner", "8.3.1")
+            self.assertIn("linux", scanner_pin["url"])
 
     def test_rejects_arbitrary_version_prefix(self):
         with self.assertRaisesRegex(ValueError, "Unsupported version pin for sonarScanner: '8.3.1.99999'"):
