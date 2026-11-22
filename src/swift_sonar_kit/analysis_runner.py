@@ -6,7 +6,9 @@ SPDX-License-Identifier: GPL-3.0-only
 from contextlib import contextmanager
 import os
 from pathlib import Path
+import shutil
 import subprocess
+import sys
 import tempfile
 import uuid
 
@@ -27,9 +29,9 @@ from .workflow import _lock, _record
 # findings are imported as a fresh generic report, not rerun by the plugin.
 # In particular, do not expose xcrun, xcodebuild, swift, periphery, mobsfscan or
 # oclint. Unavailable optional sensors may log warnings, not run extra tools.
-# The scanner SSL library invokes `security` by name to read system trust.
+# The scanner SSL library on macOS invokes `security` by name to read system trust.
 # Keep certificate verification enabled and expose the genuine system binary.
-_SCANNER_UTILITIES = ("sh", "dirname", "basename", "readlink", "uname", "sed", "grep", "security")
+_SCANNER_UTILITIES = ("sh", "dirname", "basename", "readlink", "uname", "sed", "grep")
 
 
 def _tools(setup: dict, plan: dict) -> dict:
@@ -63,10 +65,14 @@ def _scanner_path(root: Path):
     not a sandbox for arbitrary server plugins or a security attestation.
     """
     state = safe_path(root, ".swift-sonar", must_exist=True)
+    utilities = _SCANNER_UTILITIES + (("security",) if sys.platform == "darwin" else ())
     with tempfile.TemporaryDirectory(prefix=".analysis-path-", dir=state) as directory:
         base = Path(directory)
-        for name in _SCANNER_UTILITIES:
+        for name in utilities:
             source = Path("/bin" if name == "sh" else "/usr/bin") / name
+            if not source.is_file() or not os.access(source, os.X_OK):
+                found = shutil.which(name)
+                source = Path(found) if found else source
             if not source.is_file() or not os.access(source, os.X_OK):
                 raise ValueError(f"Required scanner system utility is unavailable: {name}")
             (base / name).symlink_to(source)
