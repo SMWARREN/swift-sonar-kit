@@ -84,6 +84,11 @@ def _storage(root: Path, identity: str) -> tuple[Path, Path]:
             info = current.lstat()
             if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o022:
                 raise LocalServerError("Private storage ancestors must be user-owned and not writable by others")
+        if base.exists() and base.stat().st_uid == os.getuid():
+            try:
+                os.chmod(base, 0o700)
+            except OSError:
+                pass
         _private_dir(base)
     parent = _private_dir(state_base / "servers")
     return _private_dir(parent / identity), cache
