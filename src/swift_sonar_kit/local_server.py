@@ -368,7 +368,14 @@ def _request(url: str, endpoint: str, password: str, data: dict | None = None) -
     except server.HTTPError as error:
         if endpoint == "authentication/validate" and error.code == 401:
             return {"valid": False}
-        raise LocalServerError("Sonar setup HTTP request failed. Private state retained") from None
+        detail = ""
+        try:
+            body = error.read(256).decode("utf-8", errors="replace").strip()
+            if body:
+                detail = f" (HTTP {error.code}: {body})"
+        except Exception:
+            detail = f" (HTTP {error.code})"
+        raise LocalServerError(f"Sonar setup HTTP request failed{detail}. Private state retained") from None
     except (OSError, ValueError):
         raise LocalServerError("Sonar setup request failed. Check availability and private recovery state") from None
 
@@ -473,7 +480,7 @@ def ensure_local_server(root: Path, project_key: str) -> dict:
                     raise LocalServerError("Unowned Docker name collision. No existing resource was modified")
                 state = {"schema": 1, "root": str(root), "project_key": project_key, "identity": identity,
                          "image_id": _image(), "image_ref": IMAGE, "nonce": secrets.token_hex(16), "phase": "creating",
-                         "admin_password": secrets.token_urlsafe(36), "token_name": identity + "-analysis"}
+                         "admin_password": f"Aa1-{secrets.token_urlsafe(36)}", "token_name": identity + "-analysis"}
                 _save(directory, state)
             plugin = _plugin(cache, directory)
             # Validate all existing resources before any start or creation.

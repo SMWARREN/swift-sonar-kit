@@ -71,9 +71,6 @@ def _scanner_path(root: Path):
         for name in utilities:
             source = Path("/bin" if name == "sh" else "/usr/bin") / name
             if not source.is_file() or not os.access(source, os.X_OK):
-                found = shutil.which(name)
-                source = Path(found) if found else source
-            if not source.is_file() or not os.access(source, os.X_OK):
                 raise ValueError(f"Required scanner system utility is unavailable: {name}")
             (base / name).symlink_to(source)
         yield str(base)
